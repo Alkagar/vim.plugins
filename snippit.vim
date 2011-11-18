@@ -1,10 +1,11 @@
 " Vim global plugin for 
 " Last Change:  
-" Maintainer:   
+" Maintainer: Jakub Mrowiec, Alkagar
+" Contact: alkagar@gmail.com
 " License: This file is placed in the public domain.
 let s:pluginName = "snippit"
 let s:pluginVersion = "0.1"
-let s:snippetDirectory = "/home/alkagar/repos/templates/"
+let s:snippitDirectory = "/home/alkagar/repos/templates"
 
 " check if plugin was loaded earlier
 if exists("g:loaded_snippit")
@@ -23,8 +24,9 @@ function! s:OpenTab()
     execute ":new"
     setlocal buftype=nofile
     setlocal modifiable
-    let templateList = split(system("ls /home/alkagar/repos/templates"), "\n")
-    let lineCount = 1
+    call <SID>CreateSelectorHeader()
+    let templateList = split(system("ls " . s:snippitDirectory), "\n")
+    let lineCount = 2 
     for singleFile in templateList
         call setline(lineCount, singleFile)
         let lineCount += 1
@@ -42,13 +44,19 @@ endfunction
 
 function! s:Close()
     execute ":q"
-    let s:currentLine = line(".")
+    let s:currentLine = 2 
     for s:contentLine in s:snippetContent
         call setline(s:currentLine, s:contentLine)
         let s:currentLine += 1
     endfor
 endfunction
 
+function! s:CreateSelectorHeader()
+        call setline(1, s:pluginName . " version " . s:pluginVersion)
+endfunction
+
 if !exists(":Snippit")
     command -nargs=0    Snippit     :call <SID>OpenTab()
 endif
+
+
