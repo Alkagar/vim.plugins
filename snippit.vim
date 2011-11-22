@@ -6,6 +6,7 @@
 let s:pluginName = "snippit"
 let s:pluginVersion = "0.1"
 let s:snippitDirectory = "/home/alkagar/repos/templates"
+let s:listPosition = 1
 
 " check if plugin was loaded earlier
 if exists("g:loaded_snippit")
@@ -18,7 +19,7 @@ if !hasmapto('<Plug>SnippitOpenTab')
     map <unique>                  <Leader>s                       <Plug>SnippitOpenTab
 endif
     
-noremap <unique> <script>         <Plug>SnippitOpenTab        :call <SID>OpenTab()<CR>
+noremap <unique> <script>         <Plug>SnippitOpenTab        :Snippit<CR>
 
 function! s:OpenTab()
     execute ":new"
@@ -37,22 +38,34 @@ function! s:OpenTab()
 endfunction
 
 function! s:GetSnippet()
+    "get file name
     let s:snippetFile = getline(".")
-    let s:snippetContent = split(system("cat " . s:snippetDirectory . "/" . s:snippetFile), "\n")
+    "if trying get header don't do anything
+    if (s:snippetFile < s:listPosition)
+        return
+    endif
+    "get file content
+    let s:snippitContent = split(system("cat " . s:snippitDirectory . "/" . s:snippetFile), "\n")
+    "close scratch windows
     call s:Close()
+    "set current line
+    let s:previousCursorPosition = line('.')
+    "print file content starting with current line
+    for s:contentLine in s:snippitContent
+        let s:newLine = s:previousCursorPosition . "G"
+        execute "normal " . s:newLine . "i\<CR>\<ESC>k"
+        call setline(s:previousCursorPosition, s:contentLine)
+        let s:previousCursorPosition += 1
+    endfor
 endfunction
 
 function! s:Close()
     execute ":q"
-    let s:currentLine = 2 
-    for s:contentLine in s:snippetContent
-        call setline(s:currentLine, s:contentLine)
-        let s:currentLine += 1
-    endfor
 endfunction
 
 function! s:CreateSelectorHeader()
         call setline(1, s:pluginName . " version " . s:pluginVersion)
+        let s:listPosition += 1 
 endfunction
 
 if !exists(":Snippit")
